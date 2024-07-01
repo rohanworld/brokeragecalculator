@@ -1,0 +1,278 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intraday Equity Brokerage Calculator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #138af2;
+        }
+        .calculator {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2a5298;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .input-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #4a4a4a;
+        }
+        input[type="number"], select {
+            width: 100%;
+            padding: 10px;
+                border: 2px solid orangered;
+
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        input[type="number"]:focus, select:focus {
+            outline: none;
+            border-color: #2a5298;
+            box-shadow: 0 0 0 2px rgba(42, 82, 152, 0.2);
+        }
+        .results {
+            margin-top: 30px;
+            background-color: #e6f3ff;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding: 5px 0;
+            border-bottom: 1px solid #cce0ff;
+        }
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        .total {
+            font-weight: bold;
+            color: #2a5298;
+            font-size: 18px;
+        }
+        .info-icon {
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            background-color: #2a5298;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 18px;
+            font-size: 12px;
+            cursor: help;
+            margin-left: 5px;
+            position: relative;
+        }
+        .tooltip {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .info-icon:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>Intraday Equity Brokerage Calculator</h1>
+        <div class="input-group">
+            <label for="buy">Buy Price:</label>
+            <input autofocus type="number" id="buy" step="0.01" >
+            <span class="info-icon">i
+                <span class="tooltip">The price at which you buy the stock</span>
+            </span>
+        </div>
+        <div class="input-group">
+            <label for="sell">Sell Price:</label>
+            <input type="number" id="sell" step="0.01" >
+            <span class="info-icon">i
+                <span class="tooltip">The price at which you sell the stock</span>
+            </span>
+        </div>
+        <div class="input-group">
+            <label for="quantity">Quantity:</label>
+            <input type="number" id="quantity" >
+            <span class="info-icon">i
+                <span class="tooltip">Number of shares traded</span>
+            </span>
+        </div>
+        <div class="input-group">
+            <label for="exchange">Exchange:</label>
+            <select id="exchange">
+                <option value="NSE">NSE</option>
+                <option value="BSE">BSE</option>
+            </select>
+            <span class="info-icon">i
+                <span class="tooltip">Choose between National Stock Exchange (NSE) or Bombay Stock Exchange (BSE)</span>
+            </span>
+        </div>
+        <div class="results">
+            <div class="result-item">
+                <span>Turnover:
+                    <span class="info-icon">i
+                        <span class="tooltip">Total value of shares traded (Buy + Sell)</span>
+                    </span>
+                </span>
+                <span id="turnover"></span>
+            </div>
+            <div class="result-item">
+                <span>Brokerage:
+                    <span class="info-icon">i
+                        <span class="tooltip">0.025% on the sell side, capped at ₹20</span>
+                    </span>
+                </span>
+                <span id="brokerage"></span>
+            </div>
+            <div class="result-item">
+                <span>STT:
+                    <span class="info-icon">i
+                        <span class="tooltip">Securities Transaction Tax: 0.025% on the sell side</span>
+                    </span>
+                </span>
+                <span id="stt"></span>
+            </div>
+            <div class="result-item">
+                <span>Exchange Transaction Charge:
+                    <span class="info-icon">i
+                        <span class="tooltip">NSE: 0.00322%, BSE: 0.00375% of turnover</span>
+                    </span>
+                </span>
+                <span id="exchangeCharge"></span>
+            </div>
+            <div class="result-item">
+                <span>GST:
+                    <span class="info-icon">i
+                        <span class="tooltip">18% on (brokerage + exchange charges + SEBI charges)</span>
+                    </span>
+                </span>
+                <span id="gst"></span>
+            </div>
+            <div class="result-item">
+                <span>SEBI Charges:
+                    <span class="info-icon">i
+                        <span class="tooltip">₹10 per crore of turnover</span>
+                    </span>
+                </span>
+                <span id="sebiCharges"></span>
+            </div>
+            <div class="result-item">
+                <span>Stamp Duty:
+                    <span class="info-icon">i
+                        <span class="tooltip">0.003% on buy side</span>
+                    </span>
+                </span>
+                <span id="stampDuty"></span>
+            </div>
+            <div class="result-item total">
+                <span>Total Charges:
+                    <span class="info-icon">i
+                        <span class="tooltip">Sum of all charges</span>
+                    </span>
+                </span>
+                <span id="totalCharges"></span>
+            </div>
+            <div class="result-item">
+                <span>Break-even Points:
+                    <span class="info-icon">i
+                        <span class="tooltip">Price movement required to cover all charges</span>
+                    </span>
+                </span>
+                <span id="breakeven"></span>
+            </div>
+            <div class="result-item total">
+                <span>Net P&L:
+                    <span class="info-icon">i
+                        <span class="tooltip">Net Profit or Loss after all charges</span>
+                    </span>
+                </span>
+                <span id="netPnL"></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function formatIndianNumber(num) {
+            const parts = num.toString().split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            return parts.join('.');
+        }
+
+        function calculateCharges() {
+            const buy = parseFloat(document.getElementById('buy').value);
+            const sell = parseFloat(document.getElementById('sell').value);
+            const quantity = parseInt(document.getElementById('quantity').value);
+            const exchange = document.getElementById('exchange').value;
+
+            const turnover = (buy + sell) * quantity;
+            const brokerage = Math.min(20, 0.00025 * sell * quantity);
+            const stt = 0.00025 * sell * quantity;
+            const exchangeRate = exchange === 'NSE' ? 0.0000322 : 0.0000375;
+            const exchangeCharge = turnover * exchangeRate;
+            const sebiCharges = turnover * 0.000001;
+            const stampDuty = buy * quantity * 0.00003;
+            const gst = 0.18 * (brokerage + exchangeCharge + sebiCharges);
+
+            const totalCharges = brokerage + stt + exchangeCharge + gst + sebiCharges + stampDuty;
+            const breakeven = totalCharges / quantity;
+            const netPnL = (sell - buy) * quantity - totalCharges;
+
+            document.getElementById('turnover').textContent = '₹' + formatIndianNumber(turnover.toFixed(2));
+            document.getElementById('brokerage').textContent = '₹' + formatIndianNumber(brokerage.toFixed(2));
+            document.getElementById('stt').textContent = '₹' + formatIndianNumber(stt.toFixed(2));
+            document.getElementById('exchangeCharge').textContent = '₹' + formatIndianNumber(exchangeCharge.toFixed(2));
+            document.getElementById('gst').textContent = '₹' + formatIndianNumber(gst.toFixed(2));
+            document.getElementById('sebiCharges').textContent = '₹' + formatIndianNumber(sebiCharges.toFixed(2));
+            document.getElementById('stampDuty').textContent = '₹' + formatIndianNumber(stampDuty.toFixed(2));
+            document.getElementById('totalCharges').textContent = '₹' + formatIndianNumber(totalCharges.toFixed(2));
+            document.getElementById('breakeven').textContent = '₹' + formatIndianNumber(breakeven.toFixed(2));
+
+            const netPnLElement = document.getElementById('netPnL');
+            netPnLElement.textContent = '₹' + formatIndianNumber(Math.abs(netPnL).toFixed(2));
+            netPnLElement.style.color = netPnL >= 0 ? 'green' : 'red';
+            netPnLElement.textContent = (netPnL >= 0 ? '+' : '-') + netPnLElement.textContent;
+        }
+
+        // Add event listeners to all inputs
+        document.querySelectorAll('input, select').forEach(input => {
+            input.addEventListener('input', calculateCharges);
+        });
+
+        // Initial calculation
+        calculateCharges();
+    </script>
+</body>
+</html>
