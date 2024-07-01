@@ -14,11 +14,7 @@ This project provides a user-friendly interface to calculate various charges inv
 
 
 ## Usage
-
-1. Open `index.html` in a web browser.
-2. Input your trade details in the provided fields.
-3. Results will update automatically as you fill in the form.
-4. Understand the total costs and profitability of your intraday trades.
+Understand the total costs and profitability of your intraday trades.
 
 ## Contributing
 
